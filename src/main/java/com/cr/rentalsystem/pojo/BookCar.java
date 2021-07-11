@@ -12,10 +12,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @Setter @Getter
 public class BookCar {
-	
 	@JsonProperty("customer")
 	private Customer customer;
-	
 	@JsonProperty("vehicle")
 	private List<VehicleToBook> VehicleToBook;
 

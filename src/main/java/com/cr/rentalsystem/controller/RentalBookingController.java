@@ -1,4 +1,3 @@
-
 package com.cr.rentalsystem.controller;
 
 import java.util.Collections;
@@ -21,10 +20,6 @@ import com.cr.rentalsystem.pojo.VehicleToBook;
 import com.cr.rentalsystem.util.RentalCarValidator;
 import com.cr.rentalsystem.util.RentalUtil;
 
-/**
- * @author maneesh.chintha
- *
- */
 @RestController
 public class RentalBookingController {
 	

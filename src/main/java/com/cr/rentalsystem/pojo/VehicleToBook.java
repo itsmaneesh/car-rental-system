@@ -10,15 +10,10 @@ import lombok.Setter;
 @Setter @Getter
 @NoArgsConstructor
 public class VehicleToBook {
-	
 	private String vehicleType;
-	
 	private String fromDate;
-	
 	private String fromTime;
-	
 	private String noOfDays;
-	
 	@JsonProperty(required=false)
 	private String bookingReferenceNumber;
 	

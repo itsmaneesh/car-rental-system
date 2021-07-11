@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.cr.rentalsystem.util;
 
 import java.text.ParseException;
@@ -22,34 +19,30 @@ import com.cr.rentalsystem.pojo.VehicleDetail;
 import com.cr.rentalsystem.pojo.VehicleToBook;
 import org.springframework.util.StringUtils;
 
-/**
- * @author maneesh.chintha
- *
- */
 public class RentalCarValidator {
 	
 	public static ResponseMessage validateInputCarDetails(BookCar carsToBook) {
-		
+
 		Customer customer = carsToBook.getCustomer();
 		//validate first name
 		if(StringUtils.isEmpty(customer.getFirstName())) {
 			return getResponseMessage(true, Constants.REQUIRED_FIRST_NAME, null);
 		}
-		
+
 		//validate last name
 		if(StringUtils.isEmpty(customer.getLastName())) {
 			return getResponseMessage(true, Constants.REQUIRED_LAST_NAME, null);
 		}
-		
+
 		//validate date of birth
 		if(StringUtils.isEmpty(customer.getLastName())) {
 			return getResponseMessage(true, Constants.REQUIRED_DOB, null);
 		}
-		
+
 		if(!isDateValid(customer.getDateOfBirth(), Constants.DATE_FORMAT)) {
 			return getResponseMessage(true, Constants.INCORRECT_DOB, null);
 		}
-		
+
 		// validate each car
 		for(VehicleToBook vehicleToBook : carsToBook.getVehicleToBook()) {
 			
@@ -113,9 +106,9 @@ public class RentalCarValidator {
 		
 		return getResponseMessage(false, null, carsToBook.getVehicleToBook());
 	}
-	
+
 	/**
-	 * 
+	 * This method is used to wrap the Response object
 	 * @param isError
 	 * @param errorMessage
 	 * @param data
@@ -130,7 +123,7 @@ public class RentalCarValidator {
 	}
 	
 	/**
-	 * 
+	 * This method is to validate the input time
 	 * @param timeToValidate
 	 * @param timePattern
 	 * @return
@@ -142,7 +135,7 @@ public class RentalCarValidator {
 	}
 	
 	/**
-	 * 
+	 * This method is to validate the input date and time
 	 * @param dateToValidate
 	 * @param timeStr
 	 * @return
@@ -167,7 +160,7 @@ public class RentalCarValidator {
 	}
 	
 	/**
-	 * 
+	 * This method is used to validate the date based on the given format
 	 * @param dateToValidate
 	 * @param dateFromat
 	 * @return

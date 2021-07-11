@@ -1,14 +1,5 @@
-/**
- * 
- */
 package com.cr.rentalsystem.constants;
 
-
-/**
- * 
- * @author maneesh.chintha
-*
- */
 public class Constants {
 	
 	public static final String SEDAN = "SEDAN";

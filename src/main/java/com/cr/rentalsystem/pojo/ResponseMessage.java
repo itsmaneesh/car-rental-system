@@ -6,7 +6,6 @@ import lombok.*;
 @NoArgsConstructor
 @ToString
 public class ResponseMessage {
-	
 	private boolean isError;
 	private String errorMessage;
 	private Object data;

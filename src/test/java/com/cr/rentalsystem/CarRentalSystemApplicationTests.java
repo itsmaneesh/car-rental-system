@@ -11,6 +11,8 @@ import com.cr.rentalsystem.pojo.VehicleToBook;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -26,6 +28,8 @@ import static org.junit.Assert.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class CarRentalSystemApplicationTests {
+
+	private static final Logger log = LoggerFactory.getLogger(CarRentalSystemApplicationTests.class);
 
 	@InjectMocks
 	private RentalBookingController controller;
@@ -71,7 +75,7 @@ public class CarRentalSystemApplicationTests {
 	@Test
 	public void bookValidVehicle_success() {
 		ResponseMessage responseMessage = controller.bookACar(getBookCarStub(true, 1));
-		System.out.println("Response: " + responseMessage);
+		log.info("Response: {}" , responseMessage);
 		assertNotNull(responseMessage);
 		assertFalse(responseMessage.isError());
 	}
@@ -82,7 +86,7 @@ public class CarRentalSystemApplicationTests {
 	@Test
 	public void bookInvalidVehicle_failure() {
 		ResponseMessage responseMessage = controller.bookACar(getInvalidBookCarStub("Some vehicle"));
-		System.out.println("Response: " + responseMessage);
+		log.info("Response: {}" , responseMessage);
 		assertNotNull(responseMessage);
 		assertTrue(responseMessage.isError());
 	}
@@ -93,7 +97,7 @@ public class CarRentalSystemApplicationTests {
 	@Test
 	public void bookMoreThanOneVehicle_success() {
 		ResponseMessage responseMessage = controller.bookACar(getBookCarStub(true, 5));
-		System.out.println("Response: " + responseMessage);
+		log.info("Response: {}" , responseMessage);
 		assertNotNull(responseMessage);
 		assertFalse(responseMessage.isError());
 	}
@@ -108,7 +112,7 @@ public class CarRentalSystemApplicationTests {
 		bookCar.getVehicleToBook().add(getVehicleToBookStub(false));
 		bookCar.getVehicleToBook().add(getVehicleToBookStub(false));
 		ResponseMessage responseMessage = controller.bookACar(bookCar);
-		System.out.println("Response: " + responseMessage);
+		log.info("Response: {}" , responseMessage);
 		assertNotNull(responseMessage);
 		assertTrue(responseMessage.isError());
 	}
@@ -119,7 +123,7 @@ public class CarRentalSystemApplicationTests {
 	@Test
 	public void bookVehicleWithPastDate_failure() {
 		ResponseMessage responseMessage = controller.bookACar(getBookCarStub(false, 1));
-		System.out.println("Response: " + responseMessage);
+		log.info("Response: {}" , responseMessage);
 		assertNotNull(responseMessage);
 		assertTrue(responseMessage.isError());
 	}
@@ -132,7 +136,7 @@ public class CarRentalSystemApplicationTests {
 		BookCar bookCar = getBookCarStub(true,1);
 		bookCar.getVehicleToBook().stream().findFirst().get().setFromDate("20-20-20");
 		ResponseMessage responseMessage = controller.bookACar(bookCar);
-		System.out.println("Response: " + responseMessage);
+		log.info("Response: {}" , responseMessage);
 		assertNotNull(responseMessage);
 		assertTrue(responseMessage.isError());
 		assertTrue(responseMessage.getErrorMessage().contains("Invalid from Date"));
@@ -147,7 +151,7 @@ public class CarRentalSystemApplicationTests {
 		BookCar bookCar = getBookCarStub(true,1);
 		bookCar.getVehicleToBook().stream().findFirst().get().setFromTime("23:80:00");
 		ResponseMessage responseMessage = controller.bookACar(bookCar);
-		System.out.println("Response: " + responseMessage);
+		log.info("Response: {}" , responseMessage);
 		assertNotNull(responseMessage);
 		assertTrue(responseMessage.isError());
 		assertTrue(responseMessage.getErrorMessage().contains("Invalid from time"));
@@ -162,7 +166,7 @@ public class CarRentalSystemApplicationTests {
 		bookCar.getCustomer().setFirstName("");
 		bookCar.getCustomer().setLastName("");
 		ResponseMessage responseMessage = controller.bookACar(bookCar);
-		System.out.println("Response: " + responseMessage);
+		log.info("Response: {}" , responseMessage);
 		assertNotNull(responseMessage);
 		assertTrue(responseMessage.isError());
 		assertTrue(responseMessage.getErrorMessage().contains("name is required"));
@@ -176,7 +180,7 @@ public class CarRentalSystemApplicationTests {
 		BookCar bookCar = getBookCarStub(true, 1);
 		bookCar.getCustomer().setDateOfBirth("20-20-20");
 		ResponseMessage responseMessage = controller.bookACar(bookCar);
-		System.out.println("Response: " + responseMessage);
+		log.info("Response: {}" , responseMessage);
 		assertNotNull(responseMessage);
 		assertTrue(responseMessage.isError());
 		assertTrue(responseMessage.getErrorMessage().contains("Invalid customer date of birth"));
@@ -191,11 +195,11 @@ public class CarRentalSystemApplicationTests {
 	public void getBookingDetails_success() {
 		int noOfVehicles = 1;
 		ResponseMessage responseMessage = controller.bookACar(getBookCarStub(true, noOfVehicles));
-		System.out.println("Response: "+responseMessage);
+		log.info("Response: {}" ,responseMessage);
 		assertNotNull(responseMessage);
 		List<VehicleToBook> vehicleToBookList = (List<VehicleToBook>) responseMessage.getData();
 		Object bookingDetailsObject = controller.getBookingByReferenceNumber(vehicleToBookList.stream().findFirst().get().getBookingReferenceNumber());
-		System.out.println("Booking Details: "+ bookingDetailsObject);
+		log.info("BookingDetails Response: {}" ,bookingDetailsObject);
 		assertNotNull(vehicleToBookList);
 		assertFalse(vehicleToBookList.isEmpty());
 		assertEquals(vehicleToBookList.size(), noOfVehicles);
@@ -215,7 +219,7 @@ public class CarRentalSystemApplicationTests {
 	@Test
 	public void getBookingDetails_failure() {
 		Object responseObject = controller.getBookingByReferenceNumber("11111");
-		System.out.println("Response Object: "+responseObject);
+		log.info("Response: {}" ,responseObject);
 		assertNotNull(responseObject);
 		List<BookingDetail> bookedVehiclesList = (List<BookingDetail>) responseObject;
 		assertTrue(CollectionUtils.isEmpty(bookedVehiclesList));

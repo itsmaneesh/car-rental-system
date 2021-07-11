@@ -23,6 +23,86 @@ public class RentalCarValidator {
 	
 	public static ResponseMessage validateInputCarDetails(BookCar carsToBook) {
 
+		ResponseMessage customerDetailsValidationResponse = getCustomerDetailsValidationResponse(carsToBook);
+		if (customerDetailsValidationResponse != null) return customerDetailsValidationResponse;
+
+		ResponseMessage vehicleTypeAndDateValidationResponse = getVehicleTypeAndDateValidationResponse(carsToBook);
+		if (vehicleTypeAndDateValidationResponse != null) return vehicleTypeAndDateValidationResponse;
+
+		ResponseMessage vehicleQuantityValidationResponse = getVehicleQuantityValidationResponse(carsToBook);
+		if (vehicleQuantityValidationResponse != null) return vehicleQuantityValidationResponse;
+
+		return getResponseMessage(false, null, carsToBook.getVehicleToBook());
+	}
+
+	private static ResponseMessage getVehicleQuantityValidationResponse(BookCar carsToBook) {
+		//validate total number of vehicle requested vs available
+		int totalSedanRequested = carsToBook.getVehicleToBook().stream().filter(p -> Constants.SEDAN.equalsIgnoreCase(p.getVehicleType())).collect(Collectors.toList()).size();
+		int totalSuvRequested = carsToBook.getVehicleToBook().stream().filter(p -> Constants.SUV.equalsIgnoreCase(p.getVehicleType())).collect(Collectors.toList()).size();
+		int totalVanRequested = carsToBook.getVehicleToBook().stream().filter(p -> Constants.VAN.equalsIgnoreCase(p.getVehicleType())).collect(Collectors.toList()).size();
+
+		List<VehicleDetail> availableCars = RentalUtil.getAvailableCars();
+		int availableSedan = 0;
+		int availableSuv = 0;
+		int availableVan = 0;
+
+		for(VehicleDetail vehicleDetail : availableCars) {
+			if(Constants.SEDAN.equalsIgnoreCase(vehicleDetail.getSubType())) {
+				availableSedan = vehicleDetail.getAvailableQty();
+			}
+			if(Constants.SUV.equalsIgnoreCase(vehicleDetail.getSubType())) {
+				availableSuv = vehicleDetail.getAvailableQty();
+			}
+			if(Constants.VAN.equalsIgnoreCase(vehicleDetail.getSubType())) {
+				availableVan = vehicleDetail.getAvailableQty();
+			}
+		}
+
+		if(totalSedanRequested != 0  && totalSedanRequested > availableSedan) {
+			return getResponseMessage(true, String.format(Constants.INVALID_VEHICLE_QTY_REQ, Constants.SEDAN, totalSedanRequested, availableSedan), null);
+		}
+
+		if(totalSuvRequested != 0  && totalSuvRequested > availableSuv) {
+			return getResponseMessage(true, String.format(Constants.INVALID_VEHICLE_QTY_REQ, Constants.SUV, totalSuvRequested, availableSuv), null);
+		}
+
+		if(totalVanRequested != 0  && totalVanRequested > availableVan) {
+			return getResponseMessage(true, String.format(Constants.INVALID_VEHICLE_QTY_REQ, Constants.VAN, totalVanRequested, availableVan), null);
+		}
+		return null;
+	}
+
+	private static ResponseMessage getVehicleTypeAndDateValidationResponse(BookCar carsToBook) {
+		// validate each car
+		for(VehicleToBook vehicleToBook : carsToBook.getVehicleToBook()) {
+
+			//validate vehicle Type
+			if(! (Constants.SEDAN.equalsIgnoreCase(vehicleToBook.getVehicleType()) ||
+					Constants.SUV.equalsIgnoreCase(vehicleToBook.getVehicleType()) ||
+					Constants.VAN.equalsIgnoreCase(vehicleToBook.getVehicleType()))) {
+				return getResponseMessage(true, String.format(Constants.INVALID_VEHICLE_TYPE, vehicleToBook.getVehicleType()), null);
+			}
+
+			//validate from date
+			if(!isDateValid(vehicleToBook.getFromDate(), Constants.DATE_FORMAT)) {
+				return getResponseMessage(true, Constants.INVALID_EHICLE_REGISTER_FROM_DATE, null);
+			}
+
+			//validate from time
+			if(!isValidTime(vehicleToBook.getFromTime(), Constants.TIME24HOURS_PATTERN)) {
+				return getResponseMessage(true, String.format(Constants.INVALID_VEHICLE_REGISTER_FROM_TIME, vehicleToBook.getFromTime()), null);
+			}
+
+			// validate date time is greater than current time
+			if(!isFromDateTimeValid(vehicleToBook.getFromDate(), vehicleToBook.getFromTime())) {
+				return getResponseMessage(true, String.format(Constants.INVALID_BOOKING_DATE_TIME, vehicleToBook.getFromDate(), vehicleToBook.getFromTime()), null);
+			}
+
+		}
+		return null;
+	}
+
+	private static ResponseMessage getCustomerDetailsValidationResponse(BookCar carsToBook) {
 		Customer customer = carsToBook.getCustomer();
 		//validate first name
 		if(StringUtils.isEmpty(customer.getFirstName())) {
@@ -42,69 +122,7 @@ public class RentalCarValidator {
 		if(!isDateValid(customer.getDateOfBirth(), Constants.DATE_FORMAT)) {
 			return getResponseMessage(true, Constants.INCORRECT_DOB, null);
 		}
-
-		// validate each car
-		for(VehicleToBook vehicleToBook : carsToBook.getVehicleToBook()) {
-			
-			//validate vehicle Type
-			if(! (Constants.SEDAN.equalsIgnoreCase(vehicleToBook.getVehicleType()) ||
-					Constants.SUV.equalsIgnoreCase(vehicleToBook.getVehicleType()) ||
-					Constants.VAN.equalsIgnoreCase(vehicleToBook.getVehicleType()))) {
-				return getResponseMessage(true, String.format(Constants.INVALID_VEHICLE_TYPE, vehicleToBook.getVehicleType()), null);
-			}
-			
-			//validate from date
-			if(!isDateValid(vehicleToBook.getFromDate(), Constants.DATE_FORMAT)) {
-				return getResponseMessage(true, Constants.INVALID_EHICLE_REGISTER_FROM_DATE, null);
-			}
-			
-			//validate from time
-			if(!isValidTime(vehicleToBook.getFromTime(), Constants.TIME24HOURS_PATTERN)) {
-				return getResponseMessage(true, String.format(Constants.INVALID_VEHICLE_REGISTER_FROM_TIME, vehicleToBook.getFromTime()), null);
-			}
-			
-			// validate date time is greater than current time
-			if(!isFromDateTimeValid(vehicleToBook.getFromDate(), vehicleToBook.getFromTime())) {
-				return getResponseMessage(true, String.format(Constants.INVALID_BOOKING_DATE_TIME, vehicleToBook.getFromDate(), vehicleToBook.getFromTime()), null);
-			}
-	
-		}
-		
-		//validate total number of vehicle requested vs available
-		int totalSedanRequested = carsToBook.getVehicleToBook().stream().filter(p -> Constants.SEDAN.equalsIgnoreCase(p.getVehicleType())).collect(Collectors.toList()).size();
-		int totalSuvRequested = carsToBook.getVehicleToBook().stream().filter(p -> Constants.SUV.equalsIgnoreCase(p.getVehicleType())).collect(Collectors.toList()).size();
-		int totalVanRequested = carsToBook.getVehicleToBook().stream().filter(p -> Constants.VAN.equalsIgnoreCase(p.getVehicleType())).collect(Collectors.toList()).size();
-		
-		List<VehicleDetail> availableCars = RentalUtil.getAvailableCars();
-		int availableSedan = 0;
-		int availableSuv = 0;
-		int availableVan = 0;
-		
-		for(VehicleDetail vehicleDetail : availableCars) {
-			if(Constants.SEDAN.equalsIgnoreCase(vehicleDetail.getSubType())) {
-				availableSedan = vehicleDetail.getAvailableQty();
-			}
-			if(Constants.SUV.equalsIgnoreCase(vehicleDetail.getSubType())) {
-				availableSuv = vehicleDetail.getAvailableQty();
-			}
-			if(Constants.VAN.equalsIgnoreCase(vehicleDetail.getSubType())) {
-				availableVan = vehicleDetail.getAvailableQty();
-			}
-		}
-		
-		if(totalSedanRequested != 0  && totalSedanRequested > availableSedan) {
-			return getResponseMessage(true, String.format(Constants.INVALID_VEHICLE_QTY_REQ, Constants.SEDAN, totalSedanRequested, availableSedan), null);
-		}
-		
-		if(totalSuvRequested != 0  && totalSuvRequested > availableSuv) {
-			return getResponseMessage(true, String.format(Constants.INVALID_VEHICLE_QTY_REQ, Constants.SUV, totalSuvRequested, availableSuv), null);
-		}
-		
-		if(totalVanRequested != 0  && totalVanRequested > availableVan) {
-			return getResponseMessage(true, String.format(Constants.INVALID_VEHICLE_QTY_REQ, Constants.VAN, totalVanRequested, availableVan), null);
-		}
-		
-		return getResponseMessage(false, null, carsToBook.getVehicleToBook());
+		return null;
 	}
 
 	/**
